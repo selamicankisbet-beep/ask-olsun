@@ -121,7 +121,7 @@ if(selectedChar=="erkek") ctx.fillText("👨",player.x,player.y);
 else ctx.fillText("👩",player.x,player.y);
 
 monsters.forEach(m=>{
-m.y+=1;
+m.y+=2;
 ctx.fillText("👾",m.x,m.y);
 
 if(Math.abs(m.x-player.x)<20 && Math.abs(m.y-player.y)<20){
