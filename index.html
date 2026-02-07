@@ -6,70 +6,40 @@
 <title>Sen ve Ben</title>
 
 <style>
-body {
-    margin: 0;
-    overflow: hidden;
-    background: #111;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+body{
+margin:0;
+overflow:hidden;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+background:#87CEEB;
 }
 
-canvas {
-    background: #1c4c2b;
-    width: 360px;
-    height: 640px;
-    border-radius: 15px;
-    display: none;
-}
-
-button{
-padding:12px 20px;
-font-size:18px;
-margin:10px;
-border:none;
-border-radius:10px;
-background:#ff4d6d;
-color:white;
-}
-
-#envelope{
-font-size:80px;
-cursor:pointer;
+canvas{
+width:360px;
+height:640px;
+border-radius:15px;
+display:none;
 }
 </style>
 </head>
 
 <body>
 
-<div id="menu">
-<h1 style="color:white;">AŞK GÜCÜ ❤️</h1>
-<p style="color:white;">Karakter Seç</p>
+<div id="menu" style="color:white;text-align:center;">
+<h1>AŞK GÜCÜ ❤️</h1>
+<p>Karakter Seç</p>
 
 <button onclick="selectCharacter('erkek')">👨 Selami</button>
 <button onclick="selectCharacter('kadin')">👩 Esra</button>
+
+<p>🏆 En Yüksek Skor: <span id="highScore">0</span></p>
 </div>
 
-<div id="messageScreen" style="display:none; color:white; text-align:center;">
-<h2 id="romanticText"></h2>
-</div>
-
-<div id="finalScreen" style="display:none; color:white; text-align:center;">
+<div id="finalScreen" style="display:none;color:white;text-align:center;">
 <h2>Oyun Bitti ❤️</h2>
 <p>Skor: <span id="lastScore"></span></p>
-
-<div id="envelope" onclick="openLetter()">💌</div>
-
-<div id="letter" style="display:none;">
-<p>
-Selami’den sana özel...  
-Sen harikasın.  
-Hayatımın en güzel mucizesisin.  
-İyi ki varsın canım karım ❤️
-</p>
-</div>
-
 <button onclick="restart()">Tekrar Oyna</button>
 </div>
 
@@ -77,100 +47,165 @@ Hayatımın en güzel mucizesisin.
 
 <script>
 
-let canvas = document.getElementById("game");
-let ctx = canvas.getContext("2d");
+let canvas=document.getElementById("game");
+let ctx=canvas.getContext("2d");
 
-canvas.width = 360;
-canvas.height = 640;
+canvas.width=360;
+canvas.height=640;
 
-let player = {x:140, y:canvas.height-80};
-let monsters = [];
-let score = 0;
-let selectedChar = "erkek";
+let player={x:140,y:canvas.height-80};
+let monsters=[];
+let hearts=[];
+let particles=[];
+let score=0;
+let speed=1.2;
+let selectedChar="erkek";
 
-let messages = [
-"İyi ki varsın canım karım ❤️",
-"Seni çok seviyorum ❤️",
-"Sen benim en güzel mucizemsin ❤️",
-"Kalbim hep seninle ❤️",
-"Sen benim huzurumsun ❤️"
-];
+/* HIGH SCORE */
+let highScore=localStorage.getItem("askHighScore") || 0;
+document.getElementById("highScore").innerText=highScore;
+
+/* SES */
+let hitSound=new Audio("https://assets.mixkit.co/sfx/preview/mixkit-arcade-retro-game-over-213.wav");
+let heartSound=new Audio("https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.wav");
+
+/* TİTREŞİM */
+function vibrate(){
+if(navigator.vibrate){
+navigator.vibrate(150);
+}
+}
 
 function selectCharacter(char){
-selectedChar = char;
-document.getElementById("menu").style.display = "none";
-canvas.style.display = "block";
+selectedChar=char;
+document.getElementById("menu").style.display="none";
+canvas.style.display="block";
 startGame();
 }
 
 function startGame(){
-score = 0;
-monsters = [];
+score=0;
+speed=1.2;
+monsters=[];
+hearts=[];
+particles=[];
 gameLoop();
 }
 
+/* ARKA PLAN GÜNDÜZ / GECE */
+function drawBackground(){
+if(score<800){
+ctx.fillStyle="#87CEEB";
+}else{
+ctx.fillStyle="#0b1d3a";
+}
+ctx.fillRect(0,0,canvas.width,canvas.height);
+}
+
+/* CANAVAR */
 function spawnMonster(){
 monsters.push({
-x: Math.random() * (canvas.width-40),
-y: -20
+x:Math.random()*(canvas.width-40),
+y:-20
 });
+}
+
+/* KALP */
+function spawnHeart(){
+hearts.push({
+x:Math.random()*(canvas.width-40),
+y:-20
+});
+}
+
+/* KALP PATLAMA EFEKTİ */
+function spawnParticles(x,y){
+for(let i=0;i<10;i++){
+particles.push({
+x:x,
+y:y,
+vx:(Math.random()-0.5)*4,
+vy:(Math.random()-0.5)*4,
+life:30
+});
+}
 }
 
 function gameLoop(){
 
-ctx.clearRect(0,0,canvas.width,canvas.height);
+drawBackground();
 
+/* SKOR */
 ctx.fillStyle="white";
 ctx.font="20px Arial";
 ctx.fillText("Skor: "+score,10,30);
 
+/* KARAKTER */
+ctx.font="50px Arial";
 if(selectedChar=="erkek")
 ctx.fillText("👨",player.x,player.y);
 else
 ctx.fillText("👩",player.x,player.y);
 
+/* CANAVAR */
 monsters.forEach(m=>{
-
-m.y += 1.2;
-
+m.y+=speed;
 ctx.fillText("👾",m.x,m.y);
 
-if(Math.abs(m.x-player.x)<40 && Math.abs(m.y-player.y)<30){
+if(Math.abs(m.x-player.x)<35 && Math.abs(m.y-player.y)<35){
+hitSound.play();
+vibrate();
 endGame();
 }
-
 });
 
+/* KALP */
+hearts.forEach((h,index)=>{
+h.y+=1;
+ctx.fillText("❤️",h.x,h.y);
+
+if(Math.abs(h.x-player.x)<35 && Math.abs(h.y-player.y)<35){
+heartSound.play();
+spawnParticles(h.x,h.y);
+score+=50;
+hearts.splice(index,1);
+}
+});
+
+/* PARÇACIK EFEKTİ */
+particles.forEach((p,index)=>{
+p.x+=p.vx;
+p.y+=p.vy;
+p.life--;
+
+ctx.fillText("💖",p.x,p.y);
+
+if(p.life<=0){
+particles.splice(index,1);
+}
+});
+
+/* SPAWN */
 if(Math.random()<0.02) spawnMonster();
+if(Math.random()<0.01) spawnHeart();
+
+/* ZORLUK */
+if(score%300==0) speed+=0.15;
 
 score++;
-
-if(score % 200 == 0){
-showRandomMessage();
-}
 
 requestAnimationFrame(gameLoop);
 }
 
-function showRandomMessage(){
+function endGame(){
 
-canvas.style.display="none";
-
-let msg = messages[Math.floor(Math.random()*messages.length)];
-document.getElementById("romanticText").innerText = msg;
-
-document.getElementById("messageScreen").style.display="block";
-
-setTimeout(()=>{
-document.getElementById("messageScreen").style.display="none";
-canvas.style.display="block";
-},2000);
+if(score>highScore){
+localStorage.setItem("askHighScore",score);
 }
 
-function endGame(){
 canvas.style.display="none";
 document.getElementById("finalScreen").style.display="block";
-document.getElementById("lastScore").innerText = score;
+document.getElementById("lastScore").innerText=score;
 }
 
 function restart(){
@@ -179,15 +214,12 @@ canvas.style.display="block";
 startGame();
 }
 
-function openLetter(){
-document.getElementById("letter").style.display="block";
-}
-
+/* MOBİL KONTROL */
 document.addEventListener("touchmove",e=>{
-player.x = e.touches[0].clientX - 50;
+player.x=e.touches[0].clientX-50;
 
-if(player.x < 0) player.x = 0;
-if(player.x > canvas.width-40) player.x = canvas.width-40;
+if(player.x<0) player.x=0;
+if(player.x>canvas.width-40) player.x=canvas.width-40;
 });
 
 </script>
