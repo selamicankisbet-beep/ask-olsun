@@ -46,7 +46,7 @@ cursor:pointer;
 <h1>AŞK GÜCÜ</h1>
 <p>Karakter Seç</p>
 <button onclick="selectCharacter('erkek')">👨 Selami</button>
-<button onclick="selectCharacter('kadin')">👩 Canım Karım</button>
+<button onclick="selectCharacter('kadin')">👩 Esra</button>
 </div>
 
 <div id="messageScreen" class="screen" style="display:none;">
@@ -115,6 +115,7 @@ function gameLoop(){
 ctx.clearRect(0,0,320,480);
 
 ctx.fillStyle="white";
+  ctx.font = "60px Arial";
 ctx.fillText("Skor: "+score,10,20);
 
 if(selectedChar=="erkek") ctx.fillText("👨",player.x,player.y);
@@ -124,7 +125,7 @@ monsters.forEach(m=>{
 m.y+=2;
 ctx.fillText("👾",m.x,m.y);
 
-if(Math.abs(m.x-player.x)<20 && Math.abs(m.y-player.y)<20){
+if(Math.abs(m.x-player.x)<40 && Math.abs(m.y-player.y)<20){
 endGame();
 }
 });
