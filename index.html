@@ -1,26 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta charset="UTF-8">
 <title>Sen ve Ben</title>
+
 <style>
-body{
-margin:0;
-background:#111;
-color:white;
-font-family:monospace;
-text-align:center;
+body {
+    margin: 0;
+    overflow: hidden;
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
-canvas{
-background:#1b2b1b;
-display:none;
-margin:auto;
-border:3px solid #444;
-}
-
-.screen{
-padding-top:40px;
+canvas {
+    background: #1c4c2b;
+    width: 360px;
+    height: 640px;
+    border-radius: 15px;
+    display: none;
 }
 
 button{
@@ -42,18 +43,19 @@ cursor:pointer;
 
 <body>
 
-<div id="menu" class="screen">
-<h1>AŞK GÜCÜ</h1>
-<p>Karakter Seç</p>
+<div id="menu">
+<h1 style="color:white;">AŞK GÜCÜ ❤️</h1>
+<p style="color:white;">Karakter Seç</p>
+
 <button onclick="selectCharacter('erkek')">👨 Selami</button>
 <button onclick="selectCharacter('kadin')">👩 Esra</button>
 </div>
 
-<div id="messageScreen" class="screen" style="display:none;">
+<div id="messageScreen" style="display:none; color:white; text-align:center;">
 <h2 id="romanticText"></h2>
 </div>
 
-<div id="finalScreen" class="screen" style="display:none;">
+<div id="finalScreen" style="display:none; color:white; text-align:center;">
 <h2>Oyun Bitti ❤️</h2>
 <p>Skor: <span id="lastScore"></span></p>
 
@@ -77,15 +79,16 @@ Hayatımın en güzel mucizesisin.
 
 let canvas = document.getElementById("game");
 let ctx = canvas.getContext("2d");
-  canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
 
-let player = {x:140,y:window.innerHeight-80};
-let monsters=[];
-let score=0;
-let selectedChar="erkek";
+canvas.width = 360;
+canvas.height = 640;
 
-let messages=[
+let player = {x:140, y:canvas.height-80};
+let monsters = [];
+let score = 0;
+let selectedChar = "erkek";
+
+let messages = [
 "İyi ki varsın canım karım ❤️",
 "Seni çok seviyorum ❤️",
 "Sen benim en güzel mucizemsin ❤️",
@@ -94,47 +97,55 @@ let messages=[
 ];
 
 function selectCharacter(char){
-selectedChar=char;
-document.getElementById("menu").style.display="none";
-canvas.style.display="block";
+selectedChar = char;
+document.getElementById("menu").style.display = "none";
+canvas.style.display = "block";
 startGame();
 }
 
 function startGame(){
-score=0;
-monsters=[];
+score = 0;
+monsters = [];
 gameLoop();
 }
 
 function spawnMonster(){
-monsters.push({x:Math.random()*280,y:-20});
+monsters.push({
+x: Math.random() * (canvas.width-40),
+y: -20
+});
 }
 
 function gameLoop(){
 
-ctx.clearRect(0,0,320,480);
+ctx.clearRect(0,0,canvas.width,canvas.height);
 
 ctx.fillStyle="white";
-  ctx.font = "60px Arial";
-ctx.fillText("Skor: "+score,10,20);
+ctx.font="20px Arial";
+ctx.fillText("Skor: "+score,10,30);
 
-if(selectedChar=="erkek") ctx.fillText("👨",player.x,player.y);
-else ctx.fillText("👩",player.x,player.y);
+if(selectedChar=="erkek")
+ctx.fillText("👨",player.x,player.y);
+else
+ctx.fillText("👩",player.x,player.y);
 
 monsters.forEach(m=>{
-m.y+=2;
+
+m.y += 1.2;
+
 ctx.fillText("👾",m.x,m.y);
 
-if(Math.abs(m.x-player.x)<40 && Math.abs(m.y-player.y)<20){
+if(Math.abs(m.x-player.x)<40 && Math.abs(m.y-player.y)<30){
 endGame();
 }
+
 });
 
 if(Math.random()<0.02) spawnMonster();
 
 score++;
 
-if(score%200==0){
+if(score % 200 == 0){
 showRandomMessage();
 }
 
@@ -142,9 +153,12 @@ requestAnimationFrame(gameLoop);
 }
 
 function showRandomMessage(){
+
 canvas.style.display="none";
+
 let msg = messages[Math.floor(Math.random()*messages.length)];
-document.getElementById("romanticText").innerText=msg;
+document.getElementById("romanticText").innerText = msg;
+
 document.getElementById("messageScreen").style.display="block";
 
 setTimeout(()=>{
@@ -156,7 +170,7 @@ canvas.style.display="block";
 function endGame(){
 canvas.style.display="none";
 document.getElementById("finalScreen").style.display="block";
-document.getElementById("lastScore").innerText=score;
+document.getElementById("lastScore").innerText = score;
 }
 
 function restart(){
@@ -170,7 +184,10 @@ document.getElementById("letter").style.display="block";
 }
 
 document.addEventListener("touchmove",e=>{
-player.x=e.touches[0].clientX-50;
+player.x = e.touches[0].clientX - 50;
+
+if(player.x < 0) player.x = 0;
+if(player.x > canvas.width-40) player.x = canvas.width-40;
 });
 
 </script>
