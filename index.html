@@ -1,46 +1,81 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta charset="UTF-8">
-<title>Sen ve Ben</title>
+<title>Aşk Olsun</title>
 
 <style>
 body{
 margin:0;
 overflow:hidden;
+background:#111;
 display:flex;
 justify-content:center;
 align-items:center;
 height:100vh;
-background:#111;
 }
 
 canvas{
+background:#1c4c2b;
 width:360px;
 height:640px;
 border-radius:15px;
 display:none;
-background:#1c4c2b;
+}
+
+.screen{
+color:white;
+text-align:center;
+}
+
+button{
+padding:12px 20px;
+font-size:18px;
+margin:10px;
+border:none;
+border-radius:10px;
+background:#ff4d6d;
+color:white;
+}
+
+#envelope{
+font-size:90px;
+cursor:pointer;
+}
+
+#lovePhoto{
+width:260px;
+border-radius:20px;
+margin-top:20px;
+display:none;
 }
 </style>
 </head>
 
 <body>
 
-<div id="menu" style="color:white;text-align:center;">
+<div id="menu" class="screen">
 <h1>AŞK GÜCÜ ❤️</h1>
+<p>Karakter Seç</p>
+
 <button onclick="selectCharacter('erkek')">👨 Selami</button>
-<button onclick="selectCharacter('kadin')">👩 Esra</button>
+<button onclick="selectCharacter('kadin')">👩 Eşim</button>
 </div>
 
-<div id="messageScreen" style="display:none;color:white;text-align:center;">
+<div id="messageScreen" class="screen" style="display:none;">
 <h2 id="romanticText"></h2>
 </div>
 
-<div id="finalScreen" style="display:none;color:white;text-align:center;">
+<div id="finalScreen" class="screen" style="display:none;">
 <h2>Oyun Bitti ❤️</h2>
+
 <p>Skor: <span id="lastScore"></span></p>
+
+<div id="envelope" onclick="openLetter()">💌</div>
+
+<img id="lovePhoto" src="https://i.imgur.com/W2Y7G4G.jpeg">
+
 <button onclick="restart()">Tekrar Oyna</button>
 </div>
 
@@ -57,14 +92,16 @@ canvas.height=640;
 let player={x:140,y:canvas.height-80};
 let monsters=[];
 let hearts=[];
+
 let score=0;
-let speed=1.2;
-let gameRunning=false;
+let heartCount=0;
+let selectedChar="erkek";
 
 let messages=[
+"İyi ki varsın canım karım ❤️",
 "Seni çok seviyorum ❤️",
-"İyi ki varsın ❤️",
-"Hayatımın anlamısın ❤️",
+"Sen benim huzurumsun ❤️",
+"Hayatım seninle güzel ❤️",
 "Kalbim hep seninle ❤️"
 ];
 
@@ -77,53 +114,41 @@ startGame();
 
 function startGame(){
 score=0;
-speed=1.2;
+heartCount=0;
 monsters=[];
 hearts=[];
-gameRunning=true;
 gameLoop();
 }
 
 function spawnMonster(){
+if(Math.random()<0.01){ // CANAVAR SAYISI AZALTILDI
 monsters.push({x:Math.random()*(canvas.width-40),y:-20});
+}
 }
 
 function spawnHeart(){
+if(Math.random()<0.02){
 hearts.push({x:Math.random()*(canvas.width-40),y:-20});
 }
-
-function showMessage(text){
-
-gameRunning=false;
-canvas.style.display="none";
-
-document.getElementById("romanticText").innerText=text;
-document.getElementById("messageScreen").style.display="block";
-
-setTimeout(()=>{
-document.getElementById("messageScreen").style.display="none";
-canvas.style.display="block";
-gameRunning=true;
-gameLoop();
-},2000);
 }
 
 function gameLoop(){
-
-if(!gameRunning) return;
 
 ctx.clearRect(0,0,canvas.width,canvas.height);
 
 ctx.fillStyle="white";
 ctx.font="20px Arial";
-ctx.fillText("Skor: "+score,10,30);
+ctx.fillText("Skor: "+score,10,25);
 
-ctx.font="50px Arial";
+ctx.font="40px Arial";
+
+if(selectedChar=="erkek")
 ctx.fillText("👨",player.x,player.y);
+else
+ctx.fillText("👩",player.x,player.y);
 
-/* CANAVAR */
 monsters.forEach(m=>{
-m.y+=speed;
+m.y+=1.3;
 ctx.fillText("👾",m.x,m.y);
 
 if(Math.abs(m.x-player.x)<35 && Math.abs(m.y-player.y)<35){
@@ -131,40 +156,69 @@ endGame();
 }
 });
 
-/* KALP */
-hearts.forEach((h,index)=>{
-h.y+=1;
+hearts.forEach((h,i)=>{
+h.y+=1.3;
 ctx.fillText("❤️",h.x,h.y);
 
 if(Math.abs(h.x-player.x)<35 && Math.abs(h.y-player.y)<35){
 
-let msg=messages[Math.floor(Math.random()*messages.length)];
-showMessage(msg);
+hearts.splice(i,1);
+score+=10;
+heartCount++;
 
-score+=50;
-hearts.splice(index,1);
+playHeartSound();
+
+if(heartCount%10==0){
+showRandomMessage();
+}
 }
 });
 
-if(Math.random()<0.02) spawnMonster();
-if(Math.random()<0.01) spawnHeart();
+spawnMonster();
+spawnHeart();
 
 score++;
 
 requestAnimationFrame(gameLoop);
 }
 
-function endGame(){
-gameRunning=false;
+function showRandomMessage(){
+
 canvas.style.display="none";
+
+let msg=messages[Math.floor(Math.random()*messages.length)];
+
+document.getElementById("romanticText").innerText=msg;
+document.getElementById("messageScreen").style.display="block";
+
+setTimeout(()=>{
+document.getElementById("messageScreen").style.display="none";
+canvas.style.display="block";
+},2000);
+}
+
+function endGame(){
+
+canvas.style.display="none";
+
 document.getElementById("finalScreen").style.display="block";
 document.getElementById("lastScore").innerText=score;
 }
 
 function restart(){
 document.getElementById("finalScreen").style.display="none";
+document.getElementById("lovePhoto").style.display="none";
 canvas.style.display="block";
 startGame();
+}
+
+function openLetter(){
+document.getElementById("lovePhoto").style.display="block";
+}
+
+function playHeartSound(){
+let audio=new Audio("https://actions.google.com/sounds/v1/cartoon/pop.ogg");
+audio.play();
 }
 
 document.addEventListener("touchmove",e=>{
