@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Aşk Gücü</title>
+<title>Sen ve Ben</title>
 <style>
 body{
 margin:0;
@@ -71,12 +71,14 @@ Hayatımın en güzel mucizesisin.
 <button onclick="restart()">Tekrar Oyna</button>
 </div>
 
-<canvas id="game" width="320" height="480"></canvas>
+<canvas id="game"></canvas>
 
 <script>
 
 let canvas = document.getElementById("game");
 let ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
 let player = {x:140,y:window.innerHeight-80};
 let monsters=[];
@@ -119,7 +121,7 @@ if(selectedChar=="erkek") ctx.fillText("👨",player.x,player.y);
 else ctx.fillText("👩",player.x,player.y);
 
 monsters.forEach(m=>{
-m.y+=2;
+m.y+=1;
 ctx.fillText("👾",m.x,m.y);
 
 if(Math.abs(m.x-player.x)<20 && Math.abs(m.y-player.y)<20){
