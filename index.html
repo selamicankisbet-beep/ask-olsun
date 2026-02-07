@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aşk Olsun</title>
+
+<style>
+body{
+margin:0;
+font-family:sans-serif;
+background:#1c2b1f;
+color:white;
+text-align:center;
+overflow:hidden;
+}
+
+button{
+padding:12px 25px;
+font-size:18px;
+margin-top:20px;
+border:none;
+border-radius:12px;
+background:#ff3b3b;
+color:white;
+}
+
+.screen{
+position:absolute;
+width:100%;
+height:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+.hidden{display:none;}
+
+canvas{
+background:#2f4f2f;
+border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="envelopeScreen" class="screen">
+<h2>💌 Selami'den Sana</h2>
+<button onclick="openEnvelope()">Zarfı Aç</button>
+</div>
+
+<div id="messageScreen" class="screen hidden">
+<h2>Bu oyun senin için özel hazırlandı ❤️</h2>
+<button onclick="showCharacter()">Devam Et</button>
+</div>
+
+<div id="characterScreen" class="screen hidden">
+<h2>Karakter Seç</h2>
+<button onclick="startGame()">Başla</button>
+</div>
+
+<div id="gameScreen" class="screen hidden">
+<canvas id="gameCanvas" width="300" height="400"></canvas>
+<p>Skor: <span id="score">0</span></p>
+</div>
+
+<div id="finalScreen" class="screen hidden">
+<h2>Selami’den sana özel… Sen harikasın ❤️</h2>
+<h3>İyi ki varsın canım karım</h3>
+<button onclick="showScore()">Skoru Gör</button>
+</div>
+
+<div id="scoreScreen" class="screen hidden">
+<h2>🏆 En Yüksek Skor: <span id="bestScore">0</span></h2>
+<h3>📈 Son Skor: <span id="lastScore">0</span></h3>
+<p>En güzel skor birlikte yapılanlardır ❤️</p>
+<button onclick="restartGame()">Tekrar Oyna</button>
+</div>
+
+<script>
+
+let canvas=document.getElementById("gameCanvas");
+let ctx=canvas.getContext("2d");
+
+let player={x:140,y:350};
+let hearts=[];
+let score=0;
+let best=localStorage.getItem("bestScore")||0;
+
+let messages=[
+"İyi ki varsın canım karım ❤️",
+"Sen benim en güzel şansımsın",
+"Seninle hayat daha güzel",
+"Seni çok seviyorum",
+"Birlikte daha güçlüyüz"
+];
+
+function openEnvelope(){
+navigator.vibrate?.(100);
+switchScreen("messageScreen");
+}
+
+function showCharacter(){
+switchScreen("characterScreen");
+}
+
+function startGame(){
+switchScreen("gameScreen");
+score=0;
+hearts=[];
+gameLoop();
+}
+
+function switchScreen(id){
+document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
+document.getElementById(id).classList.remove("hidden");
+}
+
+function gameLoop(){
+ctx.clearRect(0,0,300,400);
+
+ctx.fillStyle="red";
+ctx.fillRect(player.x,player.y,20,20);
+
+if(Math.random()<0.03){
+hearts.push({x:Math.random()*280,y:0});
+}
+
+hearts.forEach((h,i)=>{
+h.y+=3;
+ctx.fillStyle="pink";
+ctx.fillRect(h.x,h.y,15,15);
+
+if(Math.abs(h.x-player.x)<20 && Math.abs(h.y-player.y)<20){
+hearts.splice(i,1);
+score++;
+document.getElementById("score").innerText=score;
+
+if(score%10==0){
+alert(messages[Math.floor(Math.random()*messages.length)]);
+}
+}
+
+if(h.y>400){
+switchScreen("finalScreen");
+document.getElementById("lastScore").innerText=score;
+
+if(score>best){
+best=score;
+localStorage.setItem("bestScore",best);
+}
+return;
+}
+});
+
+requestAnimationFrame(gameLoop);
+}
+
+document.addEventListener("touchmove",e=>{
+player.x=e.touches[0].clientX-10;
+});
+
+function showScore(){
+switchScreen("scoreScreen");
+document.getElementById("bestScore").innerText=best;
+}
+
+function restartGame(){
+startGame();
+}
+
+</script>
+</body>
+</html>
